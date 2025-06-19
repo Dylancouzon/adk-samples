@@ -3,6 +3,8 @@ from arize.otel import register
 from opentelemetry import trace
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
 
+from dotenv import load_dotenv
+load_dotenv()
 
 def instrument_adk_with_arize() -> trace.Tracer:
     """Instrument the ADK with Arize."""
