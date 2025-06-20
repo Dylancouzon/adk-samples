@@ -2,6 +2,7 @@ import os
 from arize.otel import register
 from opentelemetry import trace
 from openinference.instrumentation.google_adk import GoogleADKInstrumentor
+import warnings
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -10,9 +11,11 @@ def instrument_adk_with_arize() -> trace.Tracer:
     """Instrument the ADK with Arize."""
     
     if os.getenv("ARIZE_SPACE_ID") is None:
-        raise ValueError("ARIZE_SPACE_ID is not set")
+        warnings.warn("ARIZE_SPACE_ID is not set")
+        return None
     if os.getenv("ARIZE_API_KEY") is None:
-        raise ValueError("ARIZE_API_KEY is not set")
+        warnings.warn("ARIZE_API_KEY is not set")
+        return None
     
     tracer_provider = register(
         space_id = os.getenv("ARIZE_SPACE_ID"),
