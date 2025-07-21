@@ -137,11 +137,7 @@ Created remote agent: projects/<PROJECT_NUMBER>/locations/<PROJECT_LOCATION>/rea
 
 For more information on deploying to Agent Engine, see [here](https://google.github.io/adk-docs/deploy/agent-engine/#install-vertex-ai-sdk).
 
-To test the remote agent, first set the following variable using the ID returned above e.g.
-```bash
-export AGENT_ENGINE_ID=projects/<PROJECT_NUMBER>/locations/<PROJECT_LOCATION>/reasoningEngines/<AGENT_ENGINE_ID>
-```
-then run:
+The deployment script adds the `AGENT_ENGINE_ID` to your `.env` file. To test the remote agent, simply run:
 ```bash
 python3 deployment/test_deployment.py
 ```

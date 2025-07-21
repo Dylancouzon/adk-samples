@@ -23,7 +23,7 @@ from google.genai import Client, types
 
 from . import prompt
 
-MODEL = "gemini-2.5-pro-preview-05-06" 
+MODEL = "gemini-2.5-pro" 
 MODEL_IMAGE = "imagen-3.0-generate-002"
 
 load_dotenv()
@@ -36,7 +36,7 @@ client = Client(
 )
 
 
-def generate_image(img_prompt: str, tool_context: "ToolContext"):
+async def generate_image(img_prompt: str, tool_context: "ToolContext"):
     """Generates an image based on the prompt."""
     response = client.models.generate_images(
         model=MODEL_IMAGE,
@@ -46,7 +46,7 @@ def generate_image(img_prompt: str, tool_context: "ToolContext"):
     if not response.generated_images:
         return {"status": "failed"}
     image_bytes = response.generated_images[0].image.image_bytes
-    tool_context.save_artifact(
+    await tool_context.save_artifact(
         "image.png",
         types.Part.from_bytes(data=image_bytes, mime_type="image/png"),
     )

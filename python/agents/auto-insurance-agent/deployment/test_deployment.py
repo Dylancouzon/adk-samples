@@ -12,68 +12,78 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from absl import app
+import sys
 import os
-from dotenv import load_dotenv
+
+# Add the project root to sys.path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+import os
 import vertexai
 from vertexai import agent_engines
-from vertexai.preview.reasoning_engines import AdkApp
-from auto_insurance_agent.agent import root_agent
+from google.adk.sessions import VertexAiSessionService
+from dotenv import load_dotenv
+import json
+import asyncio
 
-def main(argv: list[str]) -> None:
-
-    load_dotenv()
-
-    PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
-    LOCATION = os.environ["GOOGLE_CLOUD_LOCATION"]
-    STAGING_BUCKET = os.environ["GOOGLE_CLOUD_STORAGE_BUCKET"]
-    AGENT_ENGINE_ID = os.environ["AGENT_ENGINE_ID"]
-
-    if not PROJECT:
-        print("Missing required environment variable: GOOGLE_CLOUD_PROJECT")
+def pretty_print_event(event):
+    """Pretty prints an event with truncation for long content."""
+    if "content" not in event:
+        print(f"[{event.get('author', 'unknown')}]: {event}")
         return
-    elif not LOCATION:
-        print("Missing required environment variable: GOOGLE_CLOUD_LOCATION")
-        return
-    elif not STAGING_BUCKET:
-        print("Missing required environment variable: GOOGLE_CLOUD_STORAGE_BUCKET")
-        return
-    elif not AGENT_ENGINE_ID:
-        print("Missing required environment variable: AGENT_ENGINE_ID")
-        return
+        
+    author = event.get("author", "unknown")
+    parts = event["content"].get("parts", [])
+    
+    for part in parts:
+        if "text" in part:
+            text = part["text"]
+            print(f"[{author}]: {text}")
+        elif "functionCall" in part:
+            func_call = part["functionCall"]
+            print(f"[{author}]: Function call: {func_call.get('name', 'unknown')}")
+            # Truncate args if too long
+            args = json.dumps(func_call.get("args", {}))
+            if len(args) > 100:
+                args = args[:97] + "..."
+            print(f"  Args: {args}")
+        elif "functionResponse" in part:
+            func_response = part["functionResponse"]
+            print(f"[{author}]: Function response: {func_response.get('name', 'unknown')}")
+            # Truncate response if too long
+            response = json.dumps(func_response.get("response", {}))
+            if len(response) > 100:
+                response = response[:97] + "..."
+            print(f"  Response: {response}")
 
-    print(f"PROJECT: {PROJECT}")
-    print(f"LOCATION: {LOCATION}")
-    print(f"STAGING_BUCKET: {STAGING_BUCKET}")
-    print(f"AGENT_ENGINE_ID: {AGENT_ENGINE_ID}")
+load_dotenv()
 
-    vertexai.init(
-        project=PROJECT,
-        location=LOCATION,
-        staging_bucket=f"gs://{STAGING_BUCKET}",
-    )
+vertexai.init(
+    project=os.getenv("GOOGLE_CLOUD_PROJECT"),
+    location=os.getenv("GOOGLE_CLOUD_LOCATION"),
+)
 
-    user_id="user"
-    agent = agent_engines.get(AGENT_ENGINE_ID)
-    session = agent.create_session(user_id=user_id)
-    print("Type 'quit' to exit.")
-    while True:
-        user_input = input("Input: ")
-        if user_input == "quit":
-            break
+session_service = VertexAiSessionService(project=os.getenv("GOOGLE_CLOUD_PROJECT"),location=os.getenv("GOOGLE_CLOUD_LOCATION"))
+AGENT_ENGINE_ID = os.getenv("AGENT_ENGINE_ID")
 
-        for event in agent.stream_query(
-            user_id=user_id, session_id=session["id"], message=user_input
-        ):
-            if "content" in event:
-                if "parts" in event["content"]:
-                    parts = event["content"]["parts"]
-                    for part in parts:
-                        if "text" in part:
-                            text_part = part["text"]
-                            print(f"Response: {text_part}")
+session = asyncio.run(session_service.create_session(
+    app_name=AGENT_ENGINE_ID,
+    user_id="123",
+))
 
-    agent.delete_session(user_id=user_id, session_id=session["id"])
+agent_engine = agent_engines.get(AGENT_ENGINE_ID)
 
-if __name__ == "__main__":
-    app.run(main)
+print("Type 'quit' to exit.")
+while True:
+    user_input = input("Input: ")
+    if user_input == "quit":
+        break
+
+    for event in agent_engine.stream_query(
+        user_id="123", session_id=session.id, message=user_input
+    ):
+        pretty_print_event(event)
+
+asyncio.run(session_service.delete_session(session_id=session.id))

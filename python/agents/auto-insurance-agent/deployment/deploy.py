@@ -12,55 +12,73 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from absl import app
+import sys
 import os
-from dotenv import load_dotenv
+
+# Add the project root to sys.path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 import vertexai
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
 from auto_insurance_agent.agent import root_agent
+import logging
+import os
+from dotenv import set_key, load_dotenv
 
-def main(argv: list[str]) -> None:
+load_dotenv()
 
-    load_dotenv()
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
-    PROJECT = os.environ["GOOGLE_CLOUD_PROJECT"]
-    LOCATION = os.environ["GOOGLE_CLOUD_LOCATION"]
-    STAGING_BUCKET = os.environ["GOOGLE_CLOUD_STORAGE_BUCKET"]
+GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
+GOOGLE_CLOUD_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION")
+STAGING_BUCKET = os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET")
 
-    if not PROJECT:
-        print("Missing required environment variable: GOOGLE_CLOUD_PROJECT")
-        return
-    elif not LOCATION:
-        print("Missing required environment variable: GOOGLE_CLOUD_LOCATION")
-        return
-    elif not STAGING_BUCKET:
-        print("Missing required environment variable: GOOGLE_CLOUD_STORAGE_BUCKET")
-        return
+ENV_FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-    print(f"PROJECT: {PROJECT}")
-    print(f"LOCATION: {LOCATION}")
-    print(f"STAGING_BUCKET: {STAGING_BUCKET}")
+vertexai.init(
+    project=GOOGLE_CLOUD_PROJECT,
+    location=GOOGLE_CLOUD_LOCATION,
+    staging_bucket=STAGING_BUCKET,
+)
 
-    vertexai.init(
-        project=PROJECT,
-        location=LOCATION,
-        staging_bucket=f"gs://{STAGING_BUCKET}",
-    )
+# Function to update the .env file
+def update_env_file(agent_engine_id, env_file_path):
+    """Updates the .env file with the agent engine ID."""
+    try:
+        set_key(env_file_path, "AGENT_ENGINE_ID", agent_engine_id)
+        print(f"Updated AGENT_ENGINE_ID in {env_file_path} to {agent_engine_id}")
+    except Exception as e:
+        print(f"Error updating .env file: {e}")
 
-    app = AdkApp(agent=root_agent, enable_tracing=False)
+logger.info("deploying app...")
 
-    remote_agent = agent_engines.create(
-        app,
-        requirements=[
-            "google-adk (==0.5.0)",
-            "google-cloud-aiplatform[adk,agent_engines] (==1.94.0)",
-            "google-cloud-secret-manager"
-        ]
-    )
+app = AdkApp(
+    agent=root_agent,
+    enable_tracing=True,
+)
 
-    print(f"Created remote agent: {remote_agent.resource_name}")
-    print(f"Before testing, run the following: export AGENT_ENGINE_ID={remote_agent.resource_name}")
+logging.debug("deploying agent to agent engine:")
 
-if __name__ == "__main__":
-    app.run(main)
+remote_app = agent_engines.create(
+    app,
+    display_name="auto_insurance_agent",
+    requirements=[
+        "google-cloud-aiplatform[adk,agent-engines]>=1.100.0,<2.0.0",
+        "google-adk>=1.5.0,<2.0.0",
+        "python-dotenv",
+        "google-cloud-secret-manager"
+    ],
+    extra_packages=[
+        "./auto_insurance_agent",
+    ],
+)
+
+# log remote_app
+logging.info(f"Deployed agent to Vertex AI Agent Engine successfully, resource name: {remote_app.resource_name}")
+
+# Update the .env file with the new Agent Engine ID
+update_env_file(remote_app.resource_name, ENV_FILE_PATH)

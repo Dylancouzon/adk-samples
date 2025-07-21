@@ -26,6 +26,8 @@ To learn more, check out the [ADK Documentation](https://google.github.io/adk-do
 │   │   ├── data-science
 │   │   ├── financial-advisor
 │   │   ├── fomc-research
+│   │   ├── gemini-fullstack
+│   │   ├── image-scoring
 │   │   ├── llm-auditor
 │   │   ├── marketing-agency
 │   │   ├── personalized-shopping

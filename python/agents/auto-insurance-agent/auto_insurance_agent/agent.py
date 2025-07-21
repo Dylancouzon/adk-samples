@@ -20,7 +20,7 @@ from .tools import membership, claims, roadsideAssistance, rewards
 # Roadside sub-agent
 roadside_agent = Agent(
     name="roadside_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="Provides roadside assistance, including towing services",
     instruction="""You are a specialized roadside assistance agent.
     You can dispatch services for towing, jump starting, refilling fuel, changing tires, and helping if the driver is locked out of their vehicle.
@@ -32,13 +32,13 @@ roadside_agent = Agent(
     - Use the tool `roadsideAssistance` to create a tow request.
     - Tell them you have found a company nearby who can help. Provide them with the eta from the tow request. Include a made up name for a towing company in your reply. Tell them they will get a call back shortly.
     - Transfer back to the parent agent without saying anything else.""",
-    tools=[*roadsideAssistance.get_tools()]
+    tools=[roadsideAssistance]
 )
 
 # Membership sub-agent
 membership_agent = Agent(
     name="membership_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="Registers new members",
     instruction="""You are a specialized assistant for creating customer memberships.
     You can register new member IDs.
@@ -48,13 +48,13 @@ membership_agent = Agent(
     - If everything looks good, use the tool `membership` to create a new member id.
     - Present the new member id back to them and tell them their membership card will be mailed to them. Then direct them to login to the website or download the mobile app to login and complete registration.
     - Transfer back to the parent agent without saying anything else.""",
-    tools=[*membership.get_tools()]
+    tools=[membership]
 )
 
 # Claims sub-agent
 claims_agent = Agent(
     name="claims_agent",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     description="Opens claims",
     instruction="""You are a specialized assistant for handling auto insurance related claims.
     You can open new claims. Members can submit claims related to accidents, hail damage, or other miscellaneous incidents.
@@ -71,14 +71,14 @@ claims_agent = Agent(
         - Tell the member you've take the details and submitted an initial claim. Provide them with the claim id, and explain they should be contacted by phone shortly to continue the claims process. If they ask how long it will take to hear back, them them they should get a call within the hour.
         - If the user indicated their vehicle is damaged, tell them you've already begun the process of arranging a replacement vehicle while theirs is unavailable.
     - Transfer back to the parent agent without saying anything else.""",
-    tools=[*claims.get_tools()]
+    tools=[claims]
 )
 
 # Rewards sub-agent
 rewards_agent = Agent(
     name="rewards_agent",
     description="Finds nearby reward offers",
-    model="gemini-2.0-flash",
+    model="gemini-2.5-flash",
     instruction="""You are a specialized assistant for rewards.
     You can find nearby reward offers at locations such as shops, restaurants and theaters.
     Steps:
@@ -87,7 +87,7 @@ rewards_agent = Agent(
     - Use the tool `rewards` to find nearby rewards.
     - Show the member the available rewards listed as bullet points.
     - Transfer back to the parent agent without saying anything else.""",
-    tools=[*rewards.get_tools()]
+    tools=[rewards]
 )
 
 # The main agent
@@ -106,6 +106,6 @@ root_agent = Agent(
     After the user's request has been answered by you or a child agent, ask if there's anything else you can do to help. 
     When the user doesn't need anything else, politely thank them for contacting Cymbal Auto Insurance.""",
     sub_agents=[membership_agent, roadside_agent, claims_agent, rewards_agent],
-    tools=[*membership.get_tools()],
-    model="gemini-2.0-flash"
+    tools=[membership],
+    model="gemini-2.5-flash"
 )
