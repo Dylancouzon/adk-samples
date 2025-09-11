@@ -22,6 +22,10 @@ from .sub_agents.data_analyst import data_analyst_agent
 from .sub_agents.execution_analyst import execution_analyst_agent
 from .sub_agents.risk_analyst import risk_analyst_agent
 from .sub_agents.trading_analyst import trading_analyst_agent
+from .tracing import instrument_adk_with_phoenix
+
+# Initialize Phoenix tracing
+tracer = instrument_adk_with_phoenix()
 
 MODEL = "gemini-2.5-pro"
 
