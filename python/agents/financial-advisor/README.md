@@ -85,6 +85,8 @@ to implement this workflow.
         export GOOGLE_CLOUD_PROJECT=<your-project-id>
         export GOOGLE_CLOUD_LOCATION=<your-project-location>
         export GOOGLE_CLOUD_STORAGE_BUCKET=<your-storage-bucket>  # Only required for deployment on Agent Engine
+        export PHOENIX_COLLECTOR_ENDPOINT=<YOUR_PHOENIX_ENDPOINT>
+        export PHOENIX_API_KEY=<YOUR_PHOENIX_API_KEY>
         ```
 
     *   Authenticate your GCloud account.

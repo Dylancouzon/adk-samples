@@ -11,11 +11,13 @@ google-cloud-aiplatform = { version = "^1.93.0", extras = [
     "adk",
     "agent-engines",
 ] }
-python = "^3.9"
+python = ">=3.9,<3.14"
 google-genai = "^1.9.0"
 pydantic = "^2.10.6"
 python-dotenv = "^1.0.1"
 google-adk = "^1.0.0"
+arize-phoenix-otel = "^0.13.1"
+openinference-instrumentation-google-adk = "^0.1.4"
 [tool.poetry.group.dev]
 optional = true
 
