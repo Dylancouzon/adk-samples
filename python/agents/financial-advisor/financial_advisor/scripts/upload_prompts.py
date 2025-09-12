@@ -6,13 +6,14 @@ Usage:
       PHOENIX_CLIENT_HEADERS (e.g., "api_key=..."), if PHOENIX_API_KEY is not set
       PHOENIX_BASE_URL or PHOENIX_COLLECTOR_ENDPOINT
   - Then run:
-      python -m financial_advisor.scripts.upload_prompts
+      python financial_advisor/scripts/upload_prompts.py
 """
 
 from __future__ import annotations
 
 import os
 import warnings
+import dotenv
 
 from phoenix.client import Client  # type: ignore
 from phoenix.client.types import PromptVersion  # type: ignore
@@ -21,6 +22,9 @@ import httpx  # type: ignore
 
 
 MODEL = "gemini-2.5-pro"
+
+# Load environment variables from .env file
+dotenv.load_dotenv()
 
 
 def _bridge_env() -> None:
@@ -42,6 +46,14 @@ def _ensure_prompt(client: Client, name: str, description: str, content: str) ->
             version=version,
         )
         print(f"Created: {name} (version_id={getattr(created, 'id', 'unknown')})")
+        
+        # Add production tag
+        client.prompts.tags.create(
+            prompt_version_id=created.id,
+            name="production",
+            description="Ready for production environment"
+        )
+        
     except httpx.HTTPStatusError as e:
         if e.response is not None and e.response.status_code == 409:
             # Already exists -> create new version to refresh provider
@@ -51,6 +63,13 @@ def _ensure_prompt(client: Client, name: str, description: str, content: str) ->
                 version=version,
             )
             print(f"Updated: {name} (new_version_id={getattr(updated, 'id', 'unknown')})")
+            
+            # Add production tag
+            client.prompts.tags.create(
+                prompt_version_id=updated.id,
+                name="production",
+                description="Ready for production environment"
+            )
             return
         body = e.response.text if e.response is not None else "<no body>"
         raise RuntimeError(f"Failed to create prompt '{name}': {e} Body: {body}")
