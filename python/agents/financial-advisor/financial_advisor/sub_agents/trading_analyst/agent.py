@@ -16,13 +16,13 @@
 
 from google.adk import Agent
 
-from . import prompt
+from ...prompt_retrieval import get_prompt
 
 MODEL="gemini-2.5-pro"
 
 trading_analyst_agent = Agent(
     model=MODEL,
     name="trading_analyst_agent",
-    instruction=prompt.TRADING_ANALYST_PROMPT,
+    instruction=get_prompt("financial-advisor-trading-analyst"),
     output_key="proposed_trading_strategies_output",
 )

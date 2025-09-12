@@ -17,7 +17,7 @@
 from google.adk.agents import LlmAgent
 from google.adk.tools.agent_tool import AgentTool
 
-from . import prompt
+from .prompt_retrieval import get_prompt
 from .sub_agents.data_analyst import data_analyst_agent
 from .sub_agents.execution_analyst import execution_analyst_agent
 from .sub_agents.risk_analyst import risk_analyst_agent
@@ -39,7 +39,7 @@ financial_coordinator = LlmAgent(
         "analyze a market ticker, develop trading strategies, define "
         "execution plans, and evaluate the overall risk."
     ),
-    instruction=prompt.FINANCIAL_COORDINATOR_PROMPT,
+    instruction=get_prompt("financial-advisor-financial-coordinator"),
     output_key="financial_coordinator_output",
     tools=[
         AgentTool(agent=data_analyst_agent),

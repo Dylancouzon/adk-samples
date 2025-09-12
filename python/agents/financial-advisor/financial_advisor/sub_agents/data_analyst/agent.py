@@ -17,14 +17,14 @@
 from google.adk import Agent
 from google.adk.tools import google_search
 
-from . import prompt
+from ...prompt_retrieval import get_prompt
 
 MODEL = "gemini-2.5-pro"
 
 data_analyst_agent = Agent(
     model=MODEL,
     name="data_analyst_agent",
-    instruction=prompt.DATA_ANALYST_PROMPT,
+    instruction=get_prompt("financial-advisor-data-analyst"),
     output_key="market_data_analysis_output",
     tools=[google_search],
 )
