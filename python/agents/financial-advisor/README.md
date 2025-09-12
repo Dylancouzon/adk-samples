@@ -75,6 +75,17 @@ to implement this workflow.
 
 3.  **Configuration**
 
+    *   Set up Arize Phoenix for tracing and prompt management.
+
+        *   Create an account at https://app.phoenix.arize.com/
+        *   You may set the following environment variables in your shell, or in
+            a `.env` file instead.
+
+        ```bash
+        export PHOENIX_COLLECTOR_ENDPOINT=<YOUR_PHOENIX_ENDPOINT>
+        export PHOENIX_API_KEY=<YOUR_PHOENIX_API_KEY>
+        ```
+
     *   Set up Google Cloud credentials.
 
         *   You may set the following environment variables in your shell, or in
@@ -85,8 +96,6 @@ to implement this workflow.
         export GOOGLE_CLOUD_PROJECT=<your-project-id>
         export GOOGLE_CLOUD_LOCATION=<your-project-location>
         export GOOGLE_CLOUD_STORAGE_BUCKET=<your-storage-bucket>  # Only required for deployment on Agent Engine
-        export PHOENIX_COLLECTOR_ENDPOINT=<YOUR_PHOENIX_ENDPOINT>
-        export PHOENIX_API_KEY=<YOUR_PHOENIX_API_KEY>
         ```
 
     *   Authenticate your GCloud account.
@@ -95,6 +104,16 @@ to implement this workflow.
         gcloud auth application-default login
         gcloud auth application-default set-quota-project $GOOGLE_CLOUD_PROJECT
         ```
+
+    *   Upload prompts to Phoenix prompt manager.
+
+        *   Prompts are managed in the Phoenix prompt manager. After setting up the account and environment variables, you need to run `upload_prompts.py` to upload your prompts into Phoenix:
+
+        ```bash
+        python financial_advisor/scripts/upload_prompts.py
+        ```
+
+        *   From Phoenix, prompts can be managed, tested, and versioned. The agents will use the prompts with the "production" label. The agent needs to be restarted after a prompt change.
 
 ## Running the Agent
 
@@ -135,6 +154,34 @@ Evaluate the overall risk of the proposed plan.
 How can I help you start this process today? For example, we could begin by analyzing a market ticker.
 
 ```
+
+## Observability
+
+The Financial Advisor includes automatic tracing with Arize Phoenix. Once configured, traces will automatically appear in the Arize Phoenix dashboard at https://app.phoenix.arize.com/. This provides comprehensive observability into agent interactions, including:
+
+- Request/response cycles for each agent
+- Performance metrics and latency
+- Error tracking and debugging information
+- Token usage and costs
+- Conversation flow visualization
+
+No additional configuration is needed - tracing is enabled automatically when the Phoenix environment variables are set.
+
+## Running Evaluations
+
+After running the agent, you can run evaluations to assess the agent's performance:
+
+**Compliance Evaluations**
+
+The Financial Advisor includes configured evaluators for compliance assessment located in `evals/`. The evaluations are currently offline and need to be run manually after traces have been logged to Phoenix.
+
+To run compliance evaluations:
+
+```bash
+python3 financial_advisor/evals/run_evals.py
+```
+
+This will analyze the logged traces and evaluate the agent's responses for compliance with financial advisory guidelines. The evaluation results will be visible in the Phoenix Dashboard.
 
 ### Example Interaction
 
