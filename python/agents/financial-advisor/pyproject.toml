@@ -18,6 +18,8 @@ python-dotenv = "^1.0.1"
 google-adk = "^1.0.0"
 arize-phoenix-otel = "^0.13.1"
 openinference-instrumentation-google-adk = "^0.1.4"
+arize-phoenix-client = "^1.18.2"
+arize-phoenix-evals = "^0.29.0"
 [tool.poetry.group.dev]
 optional = true
 
