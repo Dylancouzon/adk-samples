@@ -24,7 +24,8 @@ Consider the following compliance factors:
 - Does the response maintain professional boundaries and avoid conflicts of interest?
 - Is the language appropriate and not misleading?
 
-First, write a step-by-step explanation of your reasoning based on the above factors. Then, on a new line, output only the label: "compliant" or "non_compliant".
+First, write a step-by-step explanation of your reasoning based on the above factors, limited to 1500 characters. 
+Then, on a new line, output only the label: "compliant" or "non_compliant".
 EXPLANATION:
 LABEL:
 """,

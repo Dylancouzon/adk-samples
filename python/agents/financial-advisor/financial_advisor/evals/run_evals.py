@@ -43,6 +43,7 @@ def run_compliance_eval(
         model=model_name,
         project=google_cloud_project,
         location=location,
+        max_tokens=5000
     )
 
     eval_df = _get_llm_eval_dataframe(project_name)
